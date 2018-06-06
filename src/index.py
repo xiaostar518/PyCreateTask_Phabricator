@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding:utf-8
 
-from login import UserLogin
-from maniphest import UseManiphest
-from project import UseProject
+from login import *
+from maniphest import *
+from project import *
 import time
 
 # 登录

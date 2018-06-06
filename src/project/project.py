@@ -6,6 +6,7 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
+from py_excel import *
 
 
 class UseProject:
@@ -18,6 +19,8 @@ class UseProject:
         self.project_board = 'project/board/'
         self.projects = None
         self.__metablock__ = 1
+        self.session = requests.session()
+        self.excel = OperateExcel('../Excel_files/tasks_content.xlsx', '../Excel_files/Example.xlsx')
 
     def load_session(self):
         with open('./cookies/cookies.txt', 'rb') as f:
@@ -26,9 +29,9 @@ class UseProject:
         return cookies
 
     def enter_project(self):
-        session = requests.session()
+        # session = requests.session()
         get_url = bytes(self.index_url) + bytes(self.project)
-        project_page = session.get(get_url, headers=self.headers, cookies=self.load_session())
+        project_page = self.session.get(get_url, headers=self.headers, cookies=self.load_session())
         project_content = project_page.content
 
         print '\n'
@@ -37,7 +40,7 @@ class UseProject:
         print project_content
 
         soup = BeautifulSoup(project_content, "lxml", from_encoding='utf-8')
-        print soup.prettify()
+        # print soup.prettify()
         print '-------------------------------soup.prettify--------------------------------------'
         print '-------------------------------soup.prettify--------------------------------------'
         print '-------------------------------soup.prettify--------------------------------------'
@@ -78,9 +81,9 @@ class UseProject:
             return self.in_putNum(max)
 
     def enter_selected_project(self, num):
-        session = requests.session()
+        # session = requests.session()
         get_url = bytes(self.index_url) + bytes(self.project_board) + self.projects[num]["href"] + '/'
-        project_board_page = session.get(get_url, headers=self.headers, cookies=self.load_session())
+        project_board_page = self.session.get(get_url, headers=self.headers, cookies=self.load_session())
         project_board_content = project_board_page.content
 
         print '\n'
@@ -146,7 +149,7 @@ class UseProject:
         print "projectPHID : " + projectPHID[0]
 
         soup = BeautifulSoup(js_content, "lxml")
-        print soup.prettify()
+        # print soup.prettify()
         all_forms = soup.find_all("a",
                                   class_="phabricator-action-view-item", href=re.compile("/maniphest/task/edit/form/"))
         self.forms = []
@@ -181,7 +184,6 @@ class UseProject:
         print "Selected form is : " + self.forms[selected_form_num]
         print "Selected formPHID is : " + self.formsURI[selected_form_num]
 
-        session = requests.session()
         pattern = r'/maniphest/task/edit/form/(.*?)/'
         edit_url = re.findall(pattern, self.formsURI[selected_form_num])
         post_url = bytes(self.index_url) + "maniphest/task/edit/form/" + edit_url[0] + "/"
@@ -199,13 +201,14 @@ class UseProject:
 
         }
 
-        postEditHeaders = self.headers
-        postEditHeaders["X-Phabricator-Csrf"] = self.phabricator_Csrf
-        postEditHeaders["X-Phabricator-Via"] = self.phabricator_var
-        print postEditHeaders
+        self.postEditHeaders = self.headers
+        self.postEditHeaders["X-Phabricator-Csrf"] = self.phabricator_Csrf
+        self.postEditHeaders["X-Phabricator-Via"] = self.phabricator_var
+        print self.postEditHeaders
 
         # post edit page
-        edit_page = session.post(post_url, data=postEditData, headers=postEditHeaders, cookies=self.load_session())
+        edit_page = self.session.post(post_url, data=postEditData, headers=self.postEditHeaders,
+                                      cookies=self.load_session())
         edit_content = edit_page.content.decode("unicode_escape").replace('\\', '')
 
         print "\n\n\n----------------------------------\n\n\n"
@@ -238,7 +241,7 @@ class UseProject:
         visiblePHIDs = soup.find('input', {'name': 'visiblePHIDs'}).get('value')
         print "visiblePHIDs : ", visiblePHIDs
 
-        postCreateData = {
+        self.postCreateData = {
             "__csrf__": __csrf__,
             "__form__": __form__,
             "__dialog__": __dialog__,
@@ -248,7 +251,6 @@ class UseProject:
             "order": order,
             "visiblePHIDs": "",
             "column[]": column_,
-            "title": "我的测试2" ,
 
             "__wflow__": "true",
             "__ajax__": "true",
@@ -256,7 +258,37 @@ class UseProject:
 
         }
 
-        edit_page = session.post(post_url, data=postCreateData, headers=postEditHeaders, cookies=self.load_session())
-        edit_content = edit_page.content
-        print edit_content.decode("unicode_escape").replace('\\', '')
+        # self.set_task_data_excel()
+        self.postTaskDatas = self.get_task_data_excel()
+        for post_task_data in self.postTaskDatas:
+            self.create_task(post_url, post_task_data)
+
+    def set_task_data_excel(self):
+        task_content = []
+        task_content.append({"title": ["测试title1", "测试title2"]})
+        task_content.append({"description": ["测试description1", "测试description2"]})
+
+        self.excel.export_excel(task_content)
+
+    def get_task_data_excel(self):
+        # postTaskData = {
+        #     "title": "我的测试10",
+        #     "description": "我是个测试而已"
+        # }
+        postTaskData = self.excel.load_excel()
+        return postTaskData
+
+    def create_task(self, post_url, postTaskData):
+        # send post message for create task
+        edit_page = self.session.post(post_url, data=dict(self.postCreateData, **postTaskData),
+                                      headers=self.postEditHeaders,
+                                      cookies=self.load_session())
+        edit_content = edit_page.content.decode("unicode_escape").replace('\\', '')
+        print edit_content
         self.__metablock__ += 1
+
+        pattern = r'"error":(.*?),'
+        error = re.findall(pattern, edit_content)
+        # print 'error : ', error[0]
+        if error[0] == 'null':
+            print 'Create task is success.'

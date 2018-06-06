@@ -17,7 +17,7 @@ class UserLogin:
             self.index_url = load_dict['index_url']
             self.login_url = 'auth/login/password:self/'
 
-        with open("../user_message.txt", 'r') as load_f:
+        with open("../user_files/user_message.txt", 'r') as load_f:
             load_dict = json.load(load_f, encoding='UTF-8')
             self.username = load_dict['username']
             self.password = load_dict['password']
