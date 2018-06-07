@@ -102,9 +102,3 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
-# python files
-Python27/
-
-# .bat file
-*.bat
