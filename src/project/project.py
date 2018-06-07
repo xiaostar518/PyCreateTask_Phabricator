@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from py_excel import *
 import platform
+import time
 
 
 class UseProject:
@@ -60,6 +61,8 @@ class UseProject:
             self.projects.append(d)
 
         print '--------------------Select project-----------------------------'
+        time.sleep(0.5)
+
         i = 0
         for project_content in self.projects:
             # print bytes(i) + ": " + project_content["title"]
@@ -172,6 +175,8 @@ class UseProject:
         print '\n'
 
         print '--------------------Select form-----------------------------'
+        time.sleep(0.5)
+
         self.forms = []
         i = 0
         while (i < self.forms_num):
@@ -279,7 +284,12 @@ class UseProject:
 
         }
 
+        print '\n'
+        print '\n'
+
         print '--------------------Load excel-----------------------------'
+        time.sleep(0.5)
+
         # self.set_task_data_excel()
         postTaskDatas = self.get_task_data_excel()
 
@@ -287,6 +297,8 @@ class UseProject:
         print '\n'
 
         print '--------------------Create tasks-----------------------------'
+        time.sleep(0.5)
+
         self.send_post_many_data(post_url, postTaskDatas)
 
         # data = {

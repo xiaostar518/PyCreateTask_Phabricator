@@ -24,7 +24,12 @@ class UserLogin:
 
     def get_csrf(self, session):
         '''动态参数:_csrf'''
-        index_page = session.get(self.index_url, headers=self.headers)
+        try:
+            index_page = session.get(self.index_url, headers=self.headers)
+        except Exception, e:
+            print 'The website is wrong. Please check your setting for web.'
+            print 'Error message : ', e
+            exit(0)
         html = index_page.content
 
         # print 'html -------------------------'
@@ -53,23 +58,31 @@ class UserLogin:
 
     def use_cookies_login(self):
         session = requests.session()
-        login_page = session.get(self.index_url, headers=self.headers, cookies=self.load_session())
-        login_content = login_page.content
+        try:
+            login_page = session.get(self.index_url, headers=self.headers, cookies=self.load_session())
+        except:
+            print 'Cookies is failure.'
+            print 'Logging in with an account and password.'
+            print 'waiting ...'
 
-        pattern = r'Login to Phabricator'
-        isLogin = re.findall(pattern, login_content)
-        for isLogin1 in isLogin:
-            print 'isLogin1 : ' + isLogin1
-
-        pattern = r'Authentication Failure'
-        isLoginAuth = re.findall(pattern, login_content)
-        if (not isLogin) and (not isLoginAuth):
-            # print login_content
-            print "cookies Login Success"
+            self.use_account_pass_login()
         else:
-            self.usr_account_pass_login()
+            login_content = login_page.content
 
-    def usr_account_pass_login(self):
+            pattern = r'Login to Phabricator'
+            isLogin = re.findall(pattern, login_content)
+            # for isLogin1 in isLogin:
+            #     print 'isLogin1 : ' + isLogin1
+
+            pattern = r'Authentication Failure'
+            isLoginAuth = re.findall(pattern, login_content)
+            if (not isLogin) and (not isLoginAuth):
+                # print login_content
+                print "Cookies Login Success"
+            else:
+                self.use_account_pass_login()
+
+    def use_account_pass_login(self):
         session = requests.session()
         _csrf = self.get_csrf(session)
 
@@ -88,18 +101,20 @@ class UserLogin:
 
         pattern = r'Login to Phabricator'
         isLogin = re.findall(pattern, login_content)
-        for isLogin1 in isLogin:
-            print 'isLogin1 : ' + isLogin1
+        # for isLogin1 in isLogin:
+        #     print 'isLogin1 : ' + isLogin1
         if not isLogin:
             self.save_session(session)
             # print login_content
             print "Login Success"
         else:
             self.save_session(session)
-            login_content = login_page.content
+            pattern = r'<div class="phui-info-view-body">(.*?)</div>'
+            error_message = re.findall(pattern, login_content)
 
-            print login_content
+            # print login_content
             print 'Login Failed'
+            print 'Error message: ', error_message[0]
             exit(0)
 
     def start_login(self):
@@ -107,4 +122,4 @@ class UserLogin:
         if os.path.exists('./cookies/cookies.txt'):
             self.use_cookies_login()
         else:
-            self.usr_account_pass_login()
+            self.use_account_pass_login()
