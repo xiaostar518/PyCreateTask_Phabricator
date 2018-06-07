@@ -61,7 +61,7 @@ class UserLogin:
         for isLogin1 in isLogin:
             print 'isLogin1 : ' + isLogin1
         if not isLogin:
-            print login_content
+            # print login_content
             print "cookies Login Success"
         else:
             self.usr_account_pass_login()
@@ -89,7 +89,7 @@ class UserLogin:
             print 'isLogin1 : ' + isLogin1
         if not isLogin:
             self.save_session(session)
-            print login_content
+            # print login_content
             print "Login Success"
         else:
             self.save_session(session)
@@ -100,6 +100,7 @@ class UserLogin:
             exit(0)
 
     def start_login(self):
+        print '--------------------Start Login-----------------------------'
         if os.path.exists('./cookies/cookies.txt'):
             self.use_cookies_login()
         else:

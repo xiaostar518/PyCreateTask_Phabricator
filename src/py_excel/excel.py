@@ -14,18 +14,19 @@ class OperateExcel:
 
     # 导入excel文件中的数据
     def load_excel(self):
+        print("loading Excel")
         # 打开一个workbook
         wb = load_workbook(self.load_filename)
 
-        print(wb.sheetnames)
+        # print(wb.sheetnames)
         sheetnames = wb.sheetnames
         first_sheet = wb[sheetnames[0]]
 
-        print "Work Sheet Titile:", first_sheet.title
-        print "Work Sheet Max Rows:", first_sheet.max_row
-        print "Work Sheet Min Rows:", first_sheet.min_row
-        print "Work Sheet Max Cols:", first_sheet.max_column
-        print "Work Sheet Min Cols:", first_sheet.min_column
+        print "Work Sheet Title : ", first_sheet.title
+        # print "Work Sheet Max Rows:", first_sheet.max_row
+        # print "Work Sheet Min Rows:", first_sheet.min_row
+        # print "Work Sheet Max Cols:", first_sheet.max_column
+        # print "Work Sheet Min Cols:", first_sheet.min_column
 
         post_data = []
         headers = []
@@ -39,7 +40,7 @@ class OperateExcel:
             if post_content:
                 post_data.append(post_content)
 
-        print post_data
+        # print post_data
         return post_data
 
     # 将数据导出到excel文件中
