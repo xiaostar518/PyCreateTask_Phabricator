@@ -44,7 +44,7 @@ class UserLogin:
         with open('./cookies/cookies.txt', 'wb') as f:
             cPickle.dump(session.cookies.get_dict(), f)
 
-            print 'cookies writen：cookies.txt'
+            print 'cookies writen: cookies.txt'
 
     def load_session(self):
         with open('./cookies/cookies.txt', 'rb') as f:
@@ -60,7 +60,10 @@ class UserLogin:
         isLogin = re.findall(pattern, login_content)
         for isLogin1 in isLogin:
             print 'isLogin1 : ' + isLogin1
-        if not isLogin:
+
+        pattern = r'Authentication Failure'
+        isLoginAuth = re.findall(pattern, login_content)
+        if (not isLogin) and (not isLoginAuth):
             # print login_content
             print "cookies Login Success"
         else:
