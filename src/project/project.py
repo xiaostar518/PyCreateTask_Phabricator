@@ -10,6 +10,78 @@ from py_excel import *
 import platform
 import time
 
+pre_task = "std:maniphest:task."
+
+
+def excel_message_transfest_postdata(excel_messages):
+    with open("web_message.json", 'r') as load_f:
+        load_dict = json.load(load_f, encoding='UTF-8')
+    module = load_dict['task.module']
+    foundMethod = load_dict['task.foundMethod']
+    HWVersion = load_dict['task.HWVersion']
+    priority = load_dict['priority']
+    status = load_dict['status']
+
+    data_messages = []
+    for excel_message in excel_messages:
+        # print "excel_message : ", excel_message
+
+        messages = {}
+        for key, value in excel_message.items():
+            # print "\n"
+            # print "key : %s, value : %s" % (key, value)
+            if not value:
+                continue
+            try:
+                if key == 'module':
+                    messages[pre_task + "module"] = module[value]
+                elif key == 'foundmethod':
+                    messages[pre_task + "foundMethod"] = foundMethod[value]
+                elif key == 'hwversion':
+                    messages[pre_task + "HWVersion"] = HWVersion[value]
+                elif key == 'swversion':
+                    messages[pre_task + "swVersion"] = value
+                elif key == 'fixversion':
+                    messages[pre_task + "fixVersion"] = value
+                elif key == 'verifyversion':
+                    messages[pre_task + "verifyVersion"] = value
+                elif key == 'workload':
+                    messages[pre_task + "workload"] = value
+                elif key == 'rootcause':
+                    messages[pre_task + "rootCause"] = value
+                elif key == 'status':
+                    messages['status'] = status[value]
+                elif key == 'priority':
+                    messages['priority'] = priority[value]
+                elif key == 'priority':
+                    messages['priority'] = priority[value]
+                else:
+                    messages[key] = value
+                # print "messages : ", messages
+            except Exception, e:
+                myPrint("Error : %s does not exist, skip." % e)
+
+        data_messages.append(messages)
+        # print "\n"
+        # print "\n"
+
+    # print data_messages
+
+    return data_messages
+
+
+def myPrint(text):
+    sys_style = platform.system()
+    if sys_style == "Windows":
+        # print ("Call Windows tasks")
+        print unicode(text, 'utf-8').encode('gbk')
+    elif sys_style == "Linux":
+        # print ("Call Linux tasks")
+        print text
+    else:
+        # print ("Other System tasks")
+        print text
+
 
 class UseProject:
     def __init__(self):
@@ -66,11 +138,11 @@ class UseProject:
         i = 0
         for project_content in self.projects:
             # print bytes(i) + ": " + project_content["title"]
-            self.myPrint(bytes(i) + ": " + project_content["title"])
+            myPrint(bytes(i) + ": " + project_content["title"])
             i += 1
         num = self.in_putNum('project', i)
         # print "Selected project is : " + self.projects[num]["title"]
-        self.myPrint("Selected project is : " + self.projects[num]["title"])
+        myPrint("Selected project is : " + self.projects[num]["title"])
         self.enter_selected_project(num)
 
     def in_putNum(self, text, max, min=0):
@@ -117,7 +189,7 @@ class UseProject:
             column_name = re.findall(pattern, bytes(workboard))
             self.project_columns.append(column_name[0])
             # print bytes(i) + " : " + column_name[0]
-            self.myPrint(bytes(i) + " : " + column_name[0])
+            myPrint(bytes(i) + " : " + column_name[0])
             i += 1
 
         if i == 1 and self.project_columns[0] == 'Create Workboard':
@@ -126,7 +198,7 @@ class UseProject:
 
         selected_column_num = self.in_putNum('column', i)
         # print "Selected column is : " + self.project_columns[selected_column_num]
-        self.myPrint("Selected column is : " + self.project_columns[selected_column_num])
+        myPrint("Selected column is : " + self.project_columns[selected_column_num])
 
         pattern = r'JX.Stratcom.mergeData(.*?);'
         text = re.findall(pattern, project_board_content)
@@ -184,13 +256,13 @@ class UseProject:
             form = re.findall(pattern, bytes(all_forms[i]))
             self.forms.append(form[0])
             # print bytes(i) + " : " + form[0]
-            self.myPrint(bytes(i) + " : " + form[0])
+            myPrint(bytes(i) + " : " + form[0])
             i += 1
         # print self.forms
 
         selected_form_num = self.in_putNum('form', i)
         # print "Selected form is : " + self.forms[selected_form_num]
-        self.myPrint("Selected form is : " + self.forms[selected_form_num])
+        myPrint("Selected form is : " + self.forms[selected_form_num])
 
         # print "\n\n\n----------------------------------\n\n\n"
 
@@ -360,7 +432,10 @@ class UseProject:
         #     "title": "我的测试10",
         #     "description": "我是个测试而已"
         # }
-        postTaskData = self.excel.load_excel()
+
+        excel_messages = self.excel.load_excel()
+
+        postTaskData = excel_message_transfest_postdata(excel_messages)
         return postTaskData
 
     def create_task(self, post_url, postTaskData):
@@ -368,16 +443,23 @@ class UseProject:
         edit_page = self.session.post(post_url, data=dict(self.postCreateData, **postTaskData),
                                       headers=self.postEditHeaders,
                                       cookies=self.load_session())
+        self.__metablock__ += 1
         edit_content = edit_page.content.decode("unicode_escape").replace('\\', '')
         # print edit_content
-        self.__metablock__ += 1
 
-        pattern = r'"error":(.*?),'
+        pattern = r'<div class="phui-info-view-body">(.*?)</div>'
         error = re.findall(pattern, edit_content)
-        # print 'error : ', error[0]
-        if error[0] == 'null':
+
+        pattern = r'"objectPHID":"(.*?)",'
+        success = re.findall(pattern, edit_content)
+        # print 'error : ', error
+        # print 'success : ', success
+        if success:
             print 'Create task ------- title : %s ------- is success.' % postTaskData['title']
             return True
+        elif error:
+            print 'Create task ------- title : %s ------- is fail.\n Error : %s' % (postTaskData['title'], error[0])
+            return False
         else:
             print 'Create task ------- title : %s ------- is fail.' % postTaskData['title']
             return False
@@ -401,16 +483,3 @@ class UseProject:
             print '\n'
             print 'Please try again.'
             return self.try_again_post()
-
-    @staticmethod
-    def myPrint(text):
-        sys_style = platform.system()
-        if sys_style == "Windows":
-            # print ("Call Windows tasks")
-            print unicode(text, 'utf-8').encode('gbk')
-        elif sys_style == "Linux":
-            # print ("Call Linux tasks")
-            print text
-        else:
-            # print ("Other System tasks")
-            print text

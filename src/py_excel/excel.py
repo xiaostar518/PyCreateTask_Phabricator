@@ -34,13 +34,18 @@ class OperateExcel:
             post_content = {}
             for column in range(first_sheet.min_column, first_sheet.max_column + 1):
                 if row == 1:
-                    headers.append(first_sheet.cell(row=row, column=column).value)
+                    value = first_sheet.cell(row=row, column=column).value
+                    headers.append(value.lower().replace(' ', '').replace('\n', ''))
                 else:
-                    post_content[headers[column - 1]] = first_sheet.cell(row=row, column=column).value
-            if post_content:
+                    if column == 1 and not first_sheet.cell(row=row, column=column).value:
+                        break
+                    else:
+                        post_content[headers[column - 1]] = first_sheet.cell(row=row, column=column).value
+
+            if post_content and post_content:
                 post_data.append(post_content)
 
-        # print post_data
+        # print "excel : ", post_data
         return post_data
 
     # 将数据导出到excel文件中
