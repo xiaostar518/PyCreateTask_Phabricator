@@ -6,6 +6,8 @@ import os
 import re
 import requests
 
+path_history = "./history_file/"
+
 
 class UserLogin:
 
@@ -45,14 +47,32 @@ class UserLogin:
 
         return _csrf[0]
 
+    def delete_cookies(self):
+        if os.path.exists(path_history + 'cookies.txt'):
+            os.remove(path_history + 'cookies.txt')
+
+    def save_last_account(self, account):
+        with open(path_history + 'account.txt', 'wb') as f:
+            cPickle.dump(account, f)
+
+            print 'current_account writen: account.txt'
+
+    def load_last_account(self):
+        if os.path.exists(path_history + 'account.txt'):
+            with open(path_history + 'account.txt', 'rb') as f:
+                account = cPickle.load(f)
+            return account
+        else:
+            return False
+
     def save_session(self, session):
-        with open('./cookies/cookies.txt', 'wb') as f:
+        with open(path_history + 'cookies.txt', 'wb') as f:
             cPickle.dump(session.cookies.get_dict(), f)
 
             print 'cookies writen: cookies.txt'
 
     def load_session(self):
-        with open('./cookies/cookies.txt', 'rb') as f:
+        with open(path_history + 'cookies.txt', 'rb') as f:
             cookies = cPickle.load(f)
         return cookies
 
@@ -79,6 +99,7 @@ class UserLogin:
             if (not isLogin) and (not isLoginAuth):
                 # print login_content
                 print "Cookies Login Success"
+                print 'current_account : ' + self.load_last_account()
             else:
                 self.use_account_pass_login()
 
@@ -107,6 +128,7 @@ class UserLogin:
             self.save_session(session)
             # print login_content
             print "Login Success"
+            print 'current_account : ' + self.load_last_account()
         else:
             self.save_session(session)
             pattern = r'<div class="phui-info-view-body">(.*?)</div>'
@@ -119,7 +141,10 @@ class UserLogin:
 
     def start_login(self):
         print '--------------------Start Login-----------------------------'
-        if os.path.exists('./cookies/cookies.txt'):
+        if (os.path.exists(path_history + 'cookies.txt') and (
+                self.load_last_account() and self.load_last_account() == self.username)):
             self.use_cookies_login()
         else:
+            self.save_last_account(self.username)
+            self.delete_cookies()
             self.use_account_pass_login()

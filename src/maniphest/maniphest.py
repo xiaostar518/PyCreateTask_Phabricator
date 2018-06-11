@@ -5,6 +5,8 @@ import json
 
 import requests
 
+path_history = "./history_file/"
+
 
 class UseManiphest:
     def __init__(self):
@@ -15,7 +17,7 @@ class UseManiphest:
         self.maniphest = 'maniphest/'
 
     def load_session(self):
-        with open('./cookies/cookies.txt', 'rb') as f:
+        with open(path_history + 'cookies.txt', 'rb') as f:
             # headers = cPickle.load(f)
             cookies = cPickle.load(f)
         return cookies

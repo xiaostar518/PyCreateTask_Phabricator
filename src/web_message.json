@@ -155,22 +155,6 @@
     "Wontfix": "wontfix",
     "Invalid": "invalid",
     "Spite": "spite"
-  },
-  "niubi": [
-    {
-      "swversion": "",
-      "description": "\u6211\u662f\u8be6\u60c51",
-      "title": "\u521b\u5efa1",
-      "rootcause": "",
-      "foundmethod": "Certification Test",
-      "fixversion": "",
-      "module": "APR",
-      "priority": "Unbreak Now!",
-      "workload": "None",
-      "verifyversion": "None",
-      "hwversion": "None",
-      "status": "Open"
-    }
-  ]
+  }
 }
 

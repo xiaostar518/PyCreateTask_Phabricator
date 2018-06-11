@@ -11,6 +11,7 @@ import platform
 import time
 
 pre_task = "std:maniphest:task."
+path_history = "./history_file/"
 
 
 def excel_message_transfest_postdata(excel_messages):
@@ -97,7 +98,7 @@ class UseProject:
         self.excel = OperateExcel('../Excel_files/tasks_content.xlsx', '../Excel_files/Example.xlsx')
 
     def load_session(self):
-        with open('./cookies/cookies.txt', 'rb') as f:
+        with open(path_history + 'cookies.txt', 'rb') as f:
             # headers = cPickle.load(f)
             cookies = cPickle.load(f)
         return cookies
