@@ -108,3 +108,6 @@ Python27/
 
 # .bat file
 *.bat
+
+# history_file
+history_file/
