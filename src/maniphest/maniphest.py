@@ -10,7 +10,7 @@ path_history = "./history_file/"
 
 class UseManiphest:
     def __init__(self):
-        with open("web_message.json", 'r') as load_f:
+        with open("./web_files/web_message.json", 'r') as load_f:
             load_dict = json.load(load_f, encoding='UTF-8')
         self.headers = load_dict['headers']
         self.index_url = load_dict['index_url']

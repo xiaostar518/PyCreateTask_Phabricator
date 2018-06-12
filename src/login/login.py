@@ -5,6 +5,7 @@ import json
 import os
 import re
 import requests
+import sys
 
 path_history = "./history_file/"
 
@@ -12,14 +13,14 @@ path_history = "./history_file/"
 class UserLogin:
 
     def __init__(self):
-        with open("web_message.json", 'r') as load_f:
+        with open("./web_files/web_message.json", 'r') as load_f:
             load_dict = json.load(load_f, encoding='UTF-8')
             # print(load_dict)
             self.headers = load_dict['headers']
             self.index_url = load_dict['index_url']
             self.login_url = 'auth/login/password:self/'
 
-        with open("../user_files/user_message.txt", 'r') as load_f:
+        with open("./user_message.txt", 'r') as load_f:
             load_dict = json.load(load_f, encoding='UTF-8')
             self.username = load_dict['username']
             self.password = load_dict['password']
@@ -31,7 +32,7 @@ class UserLogin:
         except Exception, e:
             print 'The website is wrong. Please check your setting for web.'
             print 'Error message : ', e
-            exit(0)
+            sys.exit(0)
         html = index_page.content
 
         # print 'html -------------------------'
@@ -137,7 +138,7 @@ class UserLogin:
             # print login_content
             print 'Login Failed'
             print 'Error message: ', error_message[0]
-            exit(0)
+            sys.exit(0)
 
     def start_login(self):
         print '--------------------Start Login-----------------------------'

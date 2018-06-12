@@ -4,6 +4,7 @@
 from openpyxl import load_workbook
 from openpyxl import Workbook
 import os
+import sys
 
 
 class OperateExcel:
@@ -18,13 +19,13 @@ class OperateExcel:
         # 打开一个workbook
         if not os.path.exists(self.load_filename):
             print "No corresponding Excel file found."
-            exit(0)
+            sys.exit(0)
 
         try:
             wb = load_workbook(self.load_filename)
         except Exception, e:
             print "Excel is wrong : ", e
-            exit(0)
+            sys.exit(0)
         else:
             # print(wb.sheetnames)
             sheetnames = wb.sheetnames

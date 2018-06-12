@@ -9,13 +9,14 @@ from bs4 import BeautifulSoup
 from py_excel import *
 import platform
 import time
+import sys
 
 pre_task = "std:maniphest:task."
 path_history = "./history_file/"
 
 
 def excel_message_transfest_postdata(excel_messages):
-    with open("web_message.json", 'r') as load_f:
+    with open("./web_files/web_message.json", 'r') as load_f:
         load_dict = json.load(load_f, encoding='UTF-8')
     module = load_dict['task.module']
     foundMethod = load_dict['task.foundMethod']
@@ -86,7 +87,7 @@ def myPrint(text):
 
 class UseProject:
     def __init__(self):
-        with open("web_message.json", 'r') as load_f:
+        with open("./web_files/web_message.json", 'r') as load_f:
             load_dict = json.load(load_f, encoding='UTF-8')
         self.headers = load_dict['headers']
         self.index_url = load_dict['index_url']
@@ -95,7 +96,7 @@ class UseProject:
         self.projects = None
         self.__metablock__ = 1
         self.session = requests.session()
-        self.excel = OperateExcel('../Excel_files/tasks_content.xlsx', '../Excel_files/Example.xlsx')
+        self.excel = OperateExcel('./Excel_files/tasks_content.xlsx', './Excel_files/Example.xlsx')
 
     def load_session(self):
         with open(path_history + 'cookies.txt', 'rb') as f:
@@ -195,7 +196,7 @@ class UseProject:
 
         if i == 1 and self.project_columns[0] == 'Create Workboard':
             print 'There is no column of this project. Exit.'
-            exit(0)
+            sys.exit(0)
 
         selected_column_num = self.in_putNum('column', i)
         # print "Selected column is : " + self.project_columns[selected_column_num]
