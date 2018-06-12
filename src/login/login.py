@@ -53,6 +53,9 @@ class UserLogin:
             os.remove(path_history + 'cookies.txt')
 
     def save_last_account(self, account):
+        if not os.path.exists(path_history):
+            os.makedirs(path_history)
+
         with open(path_history + 'account.txt', 'wb') as f:
             cPickle.dump(account, f)
 
@@ -67,6 +70,9 @@ class UserLogin:
             return False
 
     def save_session(self, session):
+        if not os.path.exists(path_history):
+            os.makedirs(path_history)
+
         with open(path_history + 'cookies.txt', 'wb') as f:
             cPickle.dump(session.cookies.get_dict(), f)
 
