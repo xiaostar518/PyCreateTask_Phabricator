@@ -110,4 +110,5 @@ Python27/
 *.bat
 
 # history_file
-history_file/
+account.txt
+cookies.txt
