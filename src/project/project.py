@@ -13,6 +13,8 @@ import sys
 
 pre_task = "std:maniphest:task."
 path_history = "./history_file/"
+export_xlsx = './Excel_files/Example.xlsx'
+load_xlsx = './Excel_files/tasks_content.xlsx'
 
 
 def excel_message_transfest_postdata(excel_messages):
@@ -34,6 +36,8 @@ def excel_message_transfest_postdata(excel_messages):
             # print "key : %s, value : %s" % (key, value)
             if not value:
                 continue
+            if key == 'duedate':
+                twelve_time = twentyfour_to_twelve_to_clock(value)
             try:
                 if key == 'module':
                     messages[pre_task + "module"] = module[value]
@@ -55,8 +59,20 @@ def excel_message_transfest_postdata(excel_messages):
                     messages['status'] = status[value]
                 elif key == 'priority':
                     messages['priority'] = priority[value]
-                elif key == 'priority':
-                    messages['priority'] = priority[value]
+                elif key == 'duedate':
+                    # print 'value' ,value
+                    twelve_time = twentyfour_to_twelve_to_clock(value)
+
+                    messages[pre_task + 'dueDate_e'] = 1
+                    messages[pre_task + 'dueDate_d'] = twelve_time[0]
+                    messages[pre_task + 'dueDate_t'] = twelve_time[1]
+                elif key == 'resolvedate':
+                    # print 'value', value
+                    twelve_time = twentyfour_to_twelve_to_clock(value)
+
+                    messages[pre_task + 'resolveDate_e'] = 1
+                    messages[pre_task + 'resolveDate_d'] = twelve_time[0]
+                    messages[pre_task + 'resolveDate_t'] = twelve_time[1]
                 else:
                     messages[key] = value
                 # print "messages : ", messages
@@ -70,6 +86,29 @@ def excel_message_transfest_postdata(excel_messages):
     # print data_messages
 
     return data_messages
+
+
+def twentyfour_to_twelve_to_clock(twentyfour_time):
+    split_time = bytes(twentyfour_time).split(' ')
+    # print 'split_time : ', split_time
+    times = split_time[1].split(':')
+    # print 'times : ', times
+
+    # print 'time[0] : ' + times[0]
+    twelve_time = [split_time[0]]
+    if int(times[0]) == 0:
+        twelve_time.append('12:' + times[1] + ' AM')
+    elif 12 > int(times[0]) > 00:
+        twelve_time.append(times[0] + ':' + times[1] + ' AM')
+    elif int(times[0]) == 12:
+        twelve_time.append('12' + ':' + times[1] + ' PM')
+    else:
+        twelve_time.append(bytes(int(times[0]) - 12) + ':' + times[1] + ' PM')
+
+    # print "twentyfour_time : ", twentyfour_time
+    # print "twelve_time : ", twelve_time
+    # print '\n\n'
+    return twelve_time
 
 
 def myPrint(text):
@@ -96,7 +135,8 @@ class UseProject:
         self.projects = None
         self.__metablock__ = 1
         self.session = requests.session()
-        self.excel = OperateExcel('./Excel_files/tasks_content.xlsx', './Excel_files/Example.xlsx')
+        self.excel_task = OperateExcel()
+        self.excel_task = OperateExcel()
 
     def load_session(self):
         with open(path_history + 'cookies.txt', 'rb') as f:
@@ -427,7 +467,7 @@ class UseProject:
         task_content.append({"title": ["测试title1", "测试title2"]})
         task_content.append({"description": ["测试description1", "测试description2"]})
 
-        self.excel.export_excel(task_content)
+        self.excel_task.export_excel(export_xlsx, task_content)
 
     def get_task_data_excel(self):
         # postTaskData = {
@@ -435,7 +475,7 @@ class UseProject:
         #     "description": "我是个测试而已"
         # }
 
-        excel_messages = self.excel.load_excel()
+        excel_messages = self.excel_task.load_excel(load_xlsx)
 
         postTaskData = excel_message_transfest_postdata(excel_messages)
         return postTaskData

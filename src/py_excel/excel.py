@@ -9,20 +9,19 @@ import sys
 
 class OperateExcel:
 
-    def __init__(self, load_filename, store_filename):
-        self.load_filename = load_filename
-        self.store_filename = store_filename
+    def __init__(self):
+        return
 
     # 导入excel文件中的数据
-    def load_excel(self):
+    def load_excel(self, load_filename):
         print("loading Excel")
         # 打开一个workbook
-        if not os.path.exists(self.load_filename):
+        if not os.path.exists(load_filename):
             print "No corresponding Excel file found."
             sys.exit(0)
 
         try:
-            wb = load_workbook(self.load_filename)
+            wb = load_workbook(load_filename)
         except Exception, e:
             print "Excel is wrong : ", e
             sys.exit(0)
@@ -58,7 +57,7 @@ class OperateExcel:
             return post_data
 
     # 将数据导出到excel文件中
-    def export_excel(self, datas=None):
+    def export_excel(self, store_filename, datas=None):
         print("export_excel")
         wb = Workbook()
         first_sheet = wb.active
@@ -77,5 +76,25 @@ class OperateExcel:
                         first_sheet.cell(row=i, column=j, value=value)
                 i = 1
                 j += 1
-        wb.save(self.store_filename)
+        wb.save(store_filename)
+        print "Excel save success"
+
+        # 将数据导出到excel文件中
+
+    def export_username_excel(self, store_filename, datas=None):
+        print("export username to excel")
+        wb = Workbook()
+        first_sheet = wb.active
+        first_sheet.title = u"sheet1"
+        first_sheet.cell(row=1, column=1, value="username")
+        print "\n"
+        if datas is not None:
+            # print datas
+            i = 2
+            j = 1
+            for data in datas:
+                print 'username is ', data
+                first_sheet.cell(row=i, column=j, value=data)
+                i += 1
+        wb.save(store_filename)
         print "Excel save success"
