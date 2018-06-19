@@ -17,7 +17,7 @@ class UseManiphest:
         self.maniphest = 'maniphest/'
 
     def load_session(self):
-        with open(path_history + 'cookies.txt', 'rb') as f:
+        with open(path_history + 'cookies', 'rb') as f:
             # headers = cPickle.load(f)
             cookies = cPickle.load(f)
         return cookies

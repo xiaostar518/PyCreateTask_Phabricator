@@ -59,6 +59,9 @@ class OperateExcel:
     # 将数据导出到excel文件中
     def export_excel(self, store_filename, datas=None):
         print("export_excel")
+        if os.path.exists(store_filename):
+            os.remove(store_filename)
+
         wb = Workbook()
         first_sheet = wb.active
         first_sheet.title = u"sheet1"
@@ -83,17 +86,20 @@ class OperateExcel:
 
     def export_username_excel(self, store_filename, datas=None):
         print("export username to excel")
+        if os.path.exists(store_filename):
+            os.remove(store_filename)
+
         wb = Workbook()
         first_sheet = wb.active
         first_sheet.title = u"sheet1"
         first_sheet.cell(row=1, column=1, value="username")
-        print "\n"
+        # print "\n"
         if datas is not None:
             # print datas
             i = 2
             j = 1
             for data in datas:
-                print 'username is ', data
+                # print 'username is ', data
                 first_sheet.cell(row=i, column=j, value=data)
                 i += 1
         wb.save(store_filename)

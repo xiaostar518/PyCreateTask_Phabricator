@@ -8,6 +8,8 @@ import time
 from py_excel import *
 from getusername import *
 import sys
+import os
+import cPickle
 
 export_xlsx = './Excel_files/all_username.xlsx'
 
@@ -57,18 +59,32 @@ def in_putNum(max, min=0):
         return in_putNum(max)
 
 
-def load_username():
+def get_web_username():
     get_username = GetUsername()
-    get_username.get_username()
+
+    print '\n'
+    print '\n'
+    print '-------------------------------loading username start-----------------------------'
+    usernames = get_username.get_username()
+
+    # for username in usernames:
+    #     print username
+
+    if usernames:
+        get_username.save_username_and_phid(usernames)
+
+    return usernames
 
 
-def export_excel():
-    username_content = []
-    username_content.append("12424324432dddfdf")
-    username_content.append("23121dfsdff")
-    username_content.append("243ffgfgfgf")
+def export_excel(usernames):
+    print '\n'
+    print '\n'
+    print '-------------------------------save username--------------------------------------'
     operateExcel = OperateExcel()
-    operateExcel.export_username_excel(export_xlsx, username_content)
+    operateExcel.export_username_excel(export_xlsx, usernames)
+
+
+# def load_username_and_phid():
 
 
 if __name__ == "__main__":
@@ -81,8 +97,23 @@ if __name__ == "__main__":
     num = in_putNum(max=2, min=0)
 
     if num == 0:
-        load_username()
-        # export_excel()
+        usernames = get_web_username()
+        users = []
+        for username in usernames:
+            for user, phid in username.items():
+                print user
+                # print 'user : ', user
+                # print 'phid : ', phid
+                users.append(user)
+        # print users
+        print '-------------------------------loading username end-------------------------------'
+
+        time.sleep(0.5)
+        if usernames:
+            export_excel(users)
+        else:
+            print 'Username is null.'
+            print 'Exit.'
     elif num == 1:
         # sys.exit(0)
         use_project()

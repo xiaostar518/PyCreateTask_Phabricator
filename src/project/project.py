@@ -10,6 +10,7 @@ from py_excel import *
 import platform
 import time
 import sys
+from getusername import *
 
 pre_task = "std:maniphest:task."
 path_history = "./history_file/"
@@ -36,8 +37,7 @@ def excel_message_transfest_postdata(excel_messages):
             # print "key : %s, value : %s" % (key, value)
             if not value:
                 continue
-            if key == 'duedate':
-                twelve_time = twentyfour_to_twelve_to_clock(value)
+
             try:
                 if key == 'module':
                     messages[pre_task + "module"] = module[value]
@@ -60,24 +60,84 @@ def excel_message_transfest_postdata(excel_messages):
                 elif key == 'priority':
                     messages['priority'] = priority[value]
                 elif key == 'duedate':
-                    # print 'value' ,value
+                    # print 'duedate value', value
                     twelve_time = twentyfour_to_twelve_to_clock(value)
 
                     messages[pre_task + 'dueDate_e'] = 1
                     messages[pre_task + 'dueDate_d'] = twelve_time[0]
                     messages[pre_task + 'dueDate_t'] = twelve_time[1]
                 elif key == 'resolvedate':
-                    # print 'value', value
+                    # print 'resolvedate value', value
                     twelve_time = twentyfour_to_twelve_to_clock(value)
 
                     messages[pre_task + 'resolveDate_e'] = 1
                     messages[pre_task + 'resolveDate_d'] = twelve_time[0]
                     messages[pre_task + 'resolveDate_t'] = twelve_time[1]
+                elif key == 'assigned':
+                    for username in usernames:
+                        for user, phid in username.items():
+                            if user == value:
+                                messages['owner[0]'] = phid
+                elif key == 'subscribers':
+                    value = value.strip()
+                    # print '\n'
+                    # print value
+                    subscribers = []
+                    if ' ' in value:
+                        subscribers = value.split(' ')
+                        # print 'kongge : ', value
+                        # print subscribers
+                    elif ',' in value:
+                        subscribers = value.split(',')
+                        # print 'douhao : ', value
+                        # print subscribers
+                    elif ';' in value:
+                        subscribers = value.split(';')
+                        # print 'fenhao : ', value
+                        # print subscribers
+                    elif unicode('，', 'utf-8') in value:
+                        subscribers = value.split(unicode('，', 'utf-8'))
+                        # print 'zhongwendouhao : ', value
+                        # print subscribers
+                    elif unicode('；', 'utf-8') in value:
+                        subscribers = value.split(unicode('；', 'utf-8'))
+                        # print 'zhongwenfenhao : ', value
+                        # print subscribers
+                    # else:
+                        # print 'shayemei :', value
+
+                    # print 's = ', subscribers
+                    if len(subscribers) > 0:
+                        # print 's>0'
+                        i = 0
+                        for subscriber in subscribers:
+                            for username in usernames:
+                                for user, phid in username.items():
+                                    if user == subscriber.strip():
+                                        messages['subscriberPHIDs[' + bytes(i) + ']'] = phid
+                                        i += 1
+                    else:
+                        # print 's=0'
+                        for username in usernames:
+                            for user, phid in username.items():
+                                if user == value:
+                                    messages['subscriberPHIDs[0]'] = phid
+
                 else:
                     messages[key] = value
                 # print "messages : ", messages
             except Exception, e:
                 myPrint("Error : %s does not exist, skip." % e)
+
+            if not (pre_task + 'dueDate_e' in messages):
+                messages[pre_task + 'dueDate_e'] = 1
+                messages[pre_task + 'dueDate_d'] = time.strftime('%Y-%m-%d', time.localtime(time.time()))
+                messages[pre_task + 'dueDate_t'] = '12:00 AM'
+
+            if not (pre_task + 'resolveDate_e' in messages):
+                messages[pre_task + 'resolveDate_e'] = 1
+                messages[pre_task + 'resolveDate_d'] = time.strftime('%Y-%m-%d', time.localtime(time.time()))
+                messages[pre_task + 'resolveDate_t'] = '12:00 AM'
 
         data_messages.append(messages)
         # print "\n"
@@ -137,9 +197,11 @@ class UseProject:
         self.session = requests.session()
         self.excel_task = OperateExcel()
         self.excel_task = OperateExcel()
+        global usernames
+        usernames = GetUsername().load_username_and_phid()
 
     def load_session(self):
-        with open(path_history + 'cookies.txt', 'rb') as f:
+        with open(path_history + 'cookies', 'rb') as f:
             # headers = cPickle.load(f)
             cookies = cPickle.load(f)
         return cookies
