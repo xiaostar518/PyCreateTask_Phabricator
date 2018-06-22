@@ -84,7 +84,12 @@ def export_excel(usernames):
     operateExcel.export_username_excel(export_xlsx, usernames)
 
 
-# def load_username_and_phid():
+def pause():
+    print '\n'
+    print '\n'
+    print '--------------------Work over-----------------------------'
+    raw_input(" Please press any key to exit.")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
@@ -114,6 +119,9 @@ if __name__ == "__main__":
         else:
             print 'Username is null.'
             print 'Exit.'
+
     elif num == 1:
         # sys.exit(0)
         use_project()
+
+    pause()
