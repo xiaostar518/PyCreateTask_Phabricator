@@ -11,11 +11,22 @@ import platform
 import time
 import sys
 from getusername import *
+import os
+import base64
 
 pre_task = "std:maniphest:task."
 path_history = "./history_file/"
+path_web_files = "./web_files/"
 export_xlsx = './Excel_files/Example.xlsx'
 load_xlsx = './Excel_files/tasks_content.xlsx'
+
+
+def pause():
+    print '\n'
+    print '\n'
+    print '--------------------Work over-----------------------------'
+    raw_input(" Please press any key to exit.")
+    sys.exit(0)
 
 
 def excel_message_transfest_postdata(excel_messages):
@@ -26,6 +37,9 @@ def excel_message_transfest_postdata(excel_messages):
     HWVersion = load_dict['task.HWVersion']
     priority = load_dict['priority']
     status = load_dict['status']
+
+    with open("./usernames_file.txt", 'r') as load_f:
+        usernames_dict = json.load(load_f, encoding='UTF-8')
 
     data_messages = []
     for excel_message in excel_messages:
@@ -104,7 +118,7 @@ def excel_message_transfest_postdata(excel_messages):
                         # print 'zhongwenfenhao : ', value
                         # print subscribers
                     # else:
-                        # print 'shayemei :', value
+                    # print 'shayemei :', value
 
                     # print 's = ', subscribers
                     if len(subscribers) > 0:
@@ -122,7 +136,8 @@ def excel_message_transfest_postdata(excel_messages):
                             for user, phid in username.items():
                                 if user == value:
                                     messages['subscriberPHIDs[0]'] = phid
-
+                elif key == 'owner':
+                    break
                 else:
                     messages[key] = value
                 # print "messages : ", messages
@@ -139,12 +154,31 @@ def excel_message_transfest_postdata(excel_messages):
                 messages[pre_task + 'resolveDate_d'] = time.strftime('%Y-%m-%d', time.localtime(time.time()))
                 messages[pre_task + 'resolveDate_t'] = '12:00 AM'
 
+        if excel_message.has_key('owner'):
+            # print usernames_dict
+            # print usernames
+
+            if excel_message['owner'] and usernames_dict:
+                # user_name = excel_message['owner']
+                # print 'user_name', user_name
+                for username in usernames:
+                    for user, phid in username.items():
+                        if usernames_dict.has_key(excel_message['owner']):
+                            if user == usernames_dict[excel_message['owner']]:
+                                messages['owner[0]'] = phid
+                                # print 'messages  ', messages['owner[0]']
+
+                # print excel_message['owner']
+                # print usernames_dict[excel_message['owner']]
+            # print '\n'
+
         data_messages.append(messages)
-        # print "\n"
-        # print "\n"
+    # print "\n"
+    # print "\n"
 
     # print data_messages
 
+    # sys.exit(0)
     return data_messages
 
 
@@ -205,6 +239,12 @@ class UseProject:
             # headers = cPickle.load(f)
             cookies = cPickle.load(f)
         return cookies
+
+    def load_content_type(self):
+        with open(path_web_files + 'content_type.json', 'rb') as f:
+            # headers = cPickle.load(f)
+            content_types_dict = json.load(f, encoding='UTF-8')
+        return content_types_dict
 
     def enter_project(self):
         # session = requests.session()
@@ -298,7 +338,7 @@ class UseProject:
 
         if i == 1 and self.project_columns[0] == 'Create Workboard':
             print 'There is no column of this project. Exit.'
-            sys.exit(0)
+            pause()
 
         selected_column_num = self.in_putNum('column', i)
         # print "Selected column is : " + self.project_columns[selected_column_num]
@@ -542,8 +582,85 @@ class UseProject:
         postTaskData = excel_message_transfest_postdata(excel_messages)
         return postTaskData
 
+    def upload_files(self, file_path):
+        # file_path = "D:/workspace/bydauto.ras/bydauto.ras.service/src/main/java/com/bydauto/ras/service/common/BusinessLogService.java"
+        # file_path = "D:/5_huang00021.png"
+        try:
+            upload_file = open(file_path, "rb").read()
+            name_temp = file_path.split('/')
+            name = name_temp[-1]
+            size = os.path.getsize(file_path)
+
+            print name
+            print size
+            # print upload_file
+
+            back_name = name.split('.')
+            content_types = self.load_content_type()
+            # print content_types
+
+            if content_types.has_key(back_name[-1]):
+                content_type = content_types[back_name[-1]]
+            else:
+                content_type = content_types['*']
+
+            print content_type
+
+            other_header = {
+                "Content-Length": bytes(size),
+                "Content-Type": bytes(content_type),
+                "Connection": "keep-alive"
+            }
+
+            url = bytes(self.index_url) + 'file/dropupload/?name=' + bytes(name) + '&length=' + bytes(
+                size) + '&__upload__=1&__ajax__=true'
+            print url
+
+            page = self.session.post(
+                url,
+                data=upload_file,
+                headers=dict(self.postEditHeaders, **other_header),
+                cookies=self.load_session(),
+            )
+
+            # print page.content
+
+            # pattern = r'"uri":"(.*?)"'
+            # file_url_temp = re.findall(pattern, page.content)
+            # print file_url_temp[0]
+
+            pattern = r'"id":(.*?),"'
+            file_num_temp = re.findall(pattern, page.content)
+
+            if file_num_temp:
+                print file_num_temp[0].replace('\/', '')
+                file_num = '{F' + bytes(file_num_temp[0].replace('\/', '')) + '}'
+                print 'The file upload succeeded: ' + file_num + '\n'
+                return file_num
+            else:
+                pattern = r'<head><title>(.*?)</title></head>'
+                error_message = re.findall(pattern, page.content)
+
+                if error_message:
+                    # print error_message
+                    myPrint(error_message[0])
+                print 'The file is wrong... Skip \n'
+                return ''
+        except Exception, e:
+            print e
+            print 'The file is wrong... Skip \n'
+            return ''
+
     def create_task(self, post_url, postTaskData):
-        # send post message for create task
+
+        file_num = self.upload_files("D:/5_huang00021.png")
+        if file_num:
+            if postTaskData.has_key('description'):
+                postTaskData['description'] = postTaskData['description'] + '\n' + file_num
+            else:
+                postTaskData['description'] = file_num
+            print postTaskData['description']
+
         edit_page = self.session.post(post_url, data=dict(self.postCreateData, **postTaskData),
                                       headers=self.postEditHeaders,
                                       cookies=self.load_session())
@@ -559,13 +676,16 @@ class UseProject:
         # print 'error : ', error
         # print 'success : ', success
         if success:
-            print 'Create task ------- title : %s ------- is success.' % postTaskData['title']
+            print 'Create task ------- title : %s ------- is success. ' % postTaskData['title']
+            print '******************************************************************** \n\n'
             return True
         elif error:
-            print 'Create task ------- title : %s ------- is fail.\n Error : %s' % (postTaskData['title'], error[0])
+            print 'Create task ------- title : %s ------- is fail.\n Error : %s.' % (postTaskData['title'], error[0])
+            print '******************************************************************** \n\n'
             return False
         else:
             print 'Create task ------- title : %s ------- is fail.' % postTaskData['title']
+            print '******************************************************************** \n\n'
             return False
 
     def try_again_post(self):

@@ -10,6 +10,13 @@ import sys
 path_history = "./history_file/"
 
 
+def pause():
+    print '\n'
+    print '\n'
+    print '--------------------Work over-----------------------------'
+    raw_input(" Please press any key to exit.")
+    sys.exit(0)
+
 class UserLogin:
 
     def __init__(self):
@@ -32,7 +39,7 @@ class UserLogin:
         except Exception, e:
             print 'The website is wrong. Please check your setting for web.'
             print 'Error message : ', e
-            sys.exit(0)
+            pause()
         html = index_page.content
 
         # print 'html -------------------------'
@@ -146,7 +153,7 @@ class UserLogin:
             # print login_content
             print 'Login Failed'
             print 'Error message: ', error_message[0]
-            sys.exit(0)
+            pause()
 
     def start_login(self):
         print '--------------------Start Login-----------------------------'

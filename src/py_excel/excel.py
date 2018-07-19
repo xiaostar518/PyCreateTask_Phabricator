@@ -6,6 +6,12 @@ from openpyxl import Workbook
 import os
 import sys
 
+def pause():
+    print '\n'
+    print '\n'
+    print '--------------------Work over-----------------------------'
+    raw_input(" Please press any key to exit.")
+    sys.exit(0)
 
 class OperateExcel:
 
@@ -18,13 +24,13 @@ class OperateExcel:
         # 打开一个workbook
         if not os.path.exists(load_filename):
             print "No corresponding Excel file found."
-            sys.exit(0)
+            pause()
 
         try:
             wb = load_workbook(load_filename)
         except Exception, e:
             print "Excel is wrong : ", e
-            sys.exit(0)
+            pause()
         else:
             # print(wb.sheetnames)
             sheetnames = wb.sheetnames
